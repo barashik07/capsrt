@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CapCut draft_content.json → SRT</title>
+</head>
+<body style="font-family: system-ui, -apple-system, sans-serif; padding: 24px;">
+  <h2>CapCut → SRT</h2>
+  <input id="file" type="file" accept=".json,application/json" />
+  <button id="convert" disabled style="margin-left: 8px;">Сконвертировать</button>
+  <p id="status" style="margin-top: 12px;"></p>
+
+  <script>
+    const fileInput = document.getElementById('file');
+    const btn = document.getElementById('convert');
+    const status = document.getElementById('status');
+
+    let draftJson = null;
+
+    fileInput.addEventListener('change', async () => {
+      status.textContent = '';
+      draftJson = null;
+
+      const f = fileInput.files?.[0];
+      btn.disabled = true;
+      if (!f) return;
+
+      try {
+        const text = await f.text();
+        draftJson = JSON.parse(text);
+        btn.disabled = false;
+        status.textContent = 'Файл загружен, можно конвертировать.';
+      } catch (e) {
+        status.textContent = 'Не смог прочитать/распарсить JSON.';
+      }
+    });
+
+    function fmt(ms) {
+      ms = Math.max(0, ms|0);
+      const h = Math.floor(ms / 3600000);
+      ms %= 3600000;
+      const m = Math.floor(ms / 60000);
+      ms %= 60000;
+      const s = Math.floor(ms / 1000);
+      const mm = ms % 1000;
+      return String(h).padStart(2,'0') + ':' +
+             String(m).padStart(2,'0') + ':' +
+             String(s).padStart(2,'0') + ',' +
+             String(mm).padStart(3,'0');
+    }
+
+    function extractText(mat) {
+      for (const key of ['content', 'base_content']) {
+        const v = mat?.[key];
+        if (typeof v === 'string' && v.trim().startsWith('{')) {
+          try {
+            const obj = JSON.parse(v);
+            if (obj && typeof obj.text === 'string' && obj.text.trim()) return obj.text;
+          } catch {}
+        }
+      }
+      return '';
+    }
+
+    function buildSrt(data) {
+      const texts = data?.materials?.texts ?? [];
+      const textById = new Map(texts.filter(t => t && t.id).map(t => [t.id, t]));
+
+      const entries = [];
+      const tracks = data?.tracks ?? [];
+
+      for (const tr of tracks) {
+        if (tr?.type !== 'text') continue;
+        for (const seg of (tr.segments ?? [])) {
+          const mid = seg?.material_id;
+          const mat = textById.get(mid);
+          if (!mat) continue;
+
+          const tt = seg?.target_timerange ?? {};
+          const startUs = tt.start;
+          const durUs = tt.duration;
+          if (typeof startUs !== 'number' || typeof durUs !== 'number') continue;
+
+          const txt = extractText(mat).replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+          if (!txt) continue;
+
+          entries.push({
+            startUs,
+            endUs: startUs + durUs,
+            text: txt,
+          });
+        }
+      }
+
+      entries.sort((a,b) => (a.startUs - b.startUs) || (a.endUs - b.endUs) || a.text.localeCompare(b.text));
+
+      let out = '';
+      for (let i = 0; i < entries.length; i++) {
+        const e = entries[i];
+        let startMs = Math.round(e.startUs / 1000);
+        let endMs = Math.round(e.endUs / 1000);
+        if (endMs <= startMs) endMs = startMs + 1;
+
+        out += (i + 1) + '\n';
+        out += fmt(startMs) + ' --> ' + fmt(endMs) + '\n';
+        out += e.text + '\n\n';
+      }
+      return out;
+    }
+
+    btn.addEventListener('click', () => {
+      if (!draftJson) return;
+
+      try {
+        const srt = buildSrt(draftJson);
+        if (!srt.trim()) {
+          status.textContent = 'Не нашёл текстовых блоков в проекте.';
+          return;
+        }
+
+        const blob = new Blob([srt], { type: 'application/x-subrip;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'subs.srt';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        URL.revokeObjectURL(url);
+        status.textContent = 'Готово: subs.srt скачан.';
+      } catch (e) {
+        status.textContent = 'Ошибка при сборке SRT.';
+      }
+    });
+  </script>
+</body>
+</html>
