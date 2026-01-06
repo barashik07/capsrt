@@ -1,41 +1,347 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CapCut draft_content.json → SRT</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CapCut SRT Converter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0d0e12;
+      --card-bg: #1a1c23;
+      --text-main: #ffffff;
+      --text-muted: #a0a0a0;
+      --accent-gradient: linear-gradient(135deg, #00f2ea 0%, #ff0050 100%);
+      --accent-glow: 0 0 20px rgba(0, 242, 234, 0.3);
+      --border-color: #333;
+      --success-color: #2ecc71;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      z-index: 10;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.05em;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    /* Drop Zone */
+    .drop-zone {
+      background: var(--card-bg);
+      border: 2px dashed var(--border-color);
+      border-radius: 24px;
+      padding: 4rem 2rem;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 3rem;
+    }
+
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+    }
+
+    .drop-zone.drag-over {
+      background: #252830;
+    }
+
+    .icon-upload {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+
+    .drop-zone:hover .icon-upload {
+      opacity: 1;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .drop-text-main {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .drop-text-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    /* Actions */
+    .actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .file-info {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .btn {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 1rem 3rem;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--accent-glow);
+      opacity: 0.5;
+      pointer-events: none;
+      transform: scale(0.95);
+    }
+
+    .btn.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+    .btn:hover {
+      filter: brightness(1.1);
+      transform: scale(1.05);
+    }
+
+    .status-msg {
+      height: 24px;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .status-msg.error { color: #ff4757; }
+    .status-msg.success { color: var(--success-color); }
+
+    /* Instructions */
+    .instructions {
+      margin-top: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 24px;
+      background: var(--accent-gradient);
+      border-radius: 2px;
+    }
+
+    .steps {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .step-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      position: relative;
+      padding-left: 4rem;
+      transition: transform 0.2s;
+    }
+
+    .step-card:hover {
+      transform: translateX(4px);
+      border-color: #555;
+    }
+
+    .step-num {
+      position: absolute;
+      left: 1.5rem;
+      top: 1.5rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.1);
+      font-family: monospace;
+    }
+
+    .code-box {
+      background: #000;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 0.5rem 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: #70d6ff;
+      border: 1px solid #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .code-text {
+        word-break: break-all;
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .background-glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0, 242, 234, 0.05) 0%, rgba(0,0,0,0) 70%);
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: -1;
+      pointer-events: none;
+    }
+  </style>
 </head>
-<body style="font-family: system-ui, -apple-system, sans-serif; padding: 24px;">
-  <h2>CapCut → SRT</h2>
-  <input id="file" type="file" accept=".json,application/json" />
-  <button id="convert" disabled style="margin-left: 8px;">Сконвертировать</button>
-  <p id="status" style="margin-top: 12px;"></p>
+<body>
+
+  <div class="background-glow"></div>
+
+  <div class="container">
+    <header>
+      <h1>CapCut SRT Extractor</h1>
+      <p class="subtitle">Конвертируйте титры из проекта CapCut в субтитры (.srt) за пару секунд</p>
+    </header>
+
+    <main>
+      <div class="drop-zone" id="dropZone">
+        <div class="icon-upload">📂</div>
+        <div class="drop-text-main">Перетащите draft_content.json сюда</div>
+        <div class="drop-text-sub">или нажмите, чтобы выбрать файл</div>
+        <input type="file" id="fileInput" accept=".json,application/json">
+        
+        <div class="actions">
+          <div class="file-info" id="fileInfo">
+            <span id="fileName">project.json</span>
+          </div>
+          <button id="convertBtn" class="btn">Сконвертировать в SRT</button>
+          <div id="status" class="status-msg"></div>
+        </div>
+      </div>
+
+      <div class="instructions">
+        <h2 class="section-title">Как найти нужный файл?</h2>
+        <div class="steps">
+          <div class="step-card">
+            <span class="step-num">01</span>
+            <p>CapCut хранит все данные о проекте (текст, тайминги, стили) в JSON файле.</p>
+            <p>Нажмите <kbd style="background:#333; padding:2px 6px; border-radius:4px;">Win</kbd> + <kbd style="background:#333; padding:2px 6px; border-radius:4px;">R</kbd> на клавиатуре.</p>
+          </div>
+          <div class="step-card">
+            <span class="step-num">02</span>
+            <p>Вставьте эту строку в открывшееся окно и нажмите <strong>Enter</strong>:</p>
+            <div class="code-box">
+              <span class="code-text" id="pathText">%localappdata%\CapCut\User Data\Projects\com.lveditor.draft\</span>
+              <button class="copy-btn" onclick="copyPath()">Копировать</button>
+            </div>
+          </div>
+          <div class="step-card">
+            <span class="step-num">03</span>
+            <p>Откроется папка, в которой много странных папок с названиями из букв и цифр.</p>
+            <p>Отсортируйте папки <strong>по дате изменения</strong> — самая верхняя, скорее всего, ваш последний проект.</p>
+          </div>
+          <div class="step-card">
+            <span class="step-num">04</span>
+            <p>Зайдите в эту папку. Внутри найдите файл <strong>draft_content.json</strong>.</p>
+            <p>Перетащите этот файл в область выше 👆.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 
   <script>
-    const fileInput = document.getElementById('file');
-    const btn = document.getElementById('convert');
-    const status = document.getElementById('status');
-
-    let draftJson = null;
-
-    fileInput.addEventListener('change', async () => {
-      status.textContent = '';
-      draftJson = null;
-
-      const f = fileInput.files?.[0];
-      btn.disabled = true;
-      if (!f) return;
-
-      try {
-        const text = await f.text();
-        draftJson = JSON.parse(text);
-        btn.disabled = false;
-        status.textContent = 'Файл загружен, можно конвертировать.';
-      } catch (e) {
-        status.textContent = 'Не смог прочитать/распарсить JSON.';
-      }
-    });
-
+    // --- Logic for Conversion (Kept from original) ---
     function fmt(ms) {
       ms = Math.max(0, ms|0);
       const h = Math.floor(ms / 3600000);
@@ -109,32 +415,121 @@
       return out;
     }
 
-    btn.addEventListener('click', () => {
-      if (!draftJson) return;
+    // --- UI Interaction Logic ---
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const convertBtn = document.getElementById('convertBtn');
+    const status = document.getElementById('status');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    
+    let currentFile = null;
+    let draftJson = null;
 
-      try {
-        const srt = buildSrt(draftJson);
-        if (!srt.trim()) {
-          status.textContent = 'Не нашёл текстовых блоков в проекте.';
-          return;
+    // Handle Drag & Drop
+    dropZone.addEventListener('click', (e) => {
+        if (e.target !== convertBtn) {
+            fileInput.click();
         }
+    });
 
-        const blob = new Blob([srt], { type: 'application/x-subrip;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
 
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'subs.srt';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('drag-over');
+    });
 
-        URL.revokeObjectURL(url);
-        status.textContent = 'Готово: subs.srt скачан.';
-      } catch (e) {
-        status.textContent = 'Ошибка при сборке SRT.';
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files.length) {
+        handleFile(e.dataTransfer.files[0]);
       }
     });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) {
+        handleFile(fileInput.files[0]);
+      }
+    });
+
+    async function handleFile(file) {
+      currentFile = file;
+      fileName.textContent = file.name;
+      fileInfo.style.display = 'flex';
+      status.textContent = '';
+      status.className = 'status-msg';
+      convertBtn.classList.remove('active');
+
+      if (!file.name.toLowerCase().endsWith('.json')) {
+        status.textContent = 'Ошибка: Пожалуйста, выберите .json файл';
+        status.className = 'status-msg error';
+        return;
+      }
+
+      try {
+        const text = await file.text();
+        draftJson = JSON.parse(text);
+        
+        // Basic validation - check roughly if it looks like CapCut project
+        if (!draftJson.materials && !draftJson.tracks) {
+             throw new Error("Invalid structure");
+        }
+
+        convertBtn.classList.add('active');
+        status.textContent = 'Файл готов к конвертации';
+        status.className = 'status-msg success';
+      } catch (e) {
+        console.error(e);
+        status.textContent = 'Ошибка: Не удалось прочитать JSON файл';
+        status.className = 'status-msg error';
+        draftJson = null;
+      }
+    }
+
+    convertBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent dropzone click
+        if (!draftJson) return;
+
+        try {
+            const srt = buildSrt(draftJson);
+            if (!srt.trim()) {
+                status.textContent = 'В проекте не найдено текста для субтитров.';
+                status.className = 'status-msg error';
+                return;
+            }
+
+            const blob = new Blob([srt], { type: 'application/x-subrip;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = (currentFile.name.replace('.json', '') || 'subs') + '.srt';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+
+            status.textContent = 'Успешно! Скачивание началось...';
+            status.className = 'status-msg success';
+        } catch (e) {
+            status.textContent = 'Ошибка при создании SRT.';
+            status.className = 'status-msg error';
+        }
+    });
+
+    // Copy path function
+    function copyPath() {
+        const text = document.getElementById('pathText').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            const originalText = btn.innerText;
+            btn.innerText = 'Скопировано!';
+            setTimeout(() => btn.innerText = originalText, 2000);
+        });
+    }
   </script>
 </body>
 </html>
