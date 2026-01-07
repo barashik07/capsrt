@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![CapCut SRT Extractor](https://barashik07.github.io/capsrt/preview.png)
-
 **[👉 OPEN ONLINE CONVERTER / ОТКРЫТЬ САЙТ](https://barashik07.github.io/capsrt/)**
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
