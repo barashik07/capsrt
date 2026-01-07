@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -63,6 +64,18 @@
     .subtitle {
       color: var(--text-muted);
       font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .warning-note {
+      background: rgba(255, 165, 0, 0.1);
+      border: 1px solid rgba(255, 165, 0, 0.3);
+      color: #ffb74d;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      display: inline-block;
+      max-width: 600px;
     }
 
     /* Drop Zone */
@@ -70,7 +83,7 @@
       background: var(--card-bg);
       border: 2px dashed var(--border-color);
       border-radius: 24px;
-      padding: 4rem 2rem;
+      padding: 3rem 2rem;
       text-align: center;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
@@ -79,10 +92,11 @@
       margin-bottom: 3rem;
     }
 
-    .drop-zone:hover, .drop-zone.drag-over {
+    .drop-zone:hover,
+    .drop-zone.drag-over {
       border-color: #fff;
       transform: translateY(-2px);
-      box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
     }
 
     .drop-zone.drag-over {
@@ -102,8 +116,15 @@
     }
 
     @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
     }
 
     .drop-text-main {
@@ -126,8 +147,62 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1rem;
-      margin-top: 1.5rem;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    /* Mode Switch */
+    .mode-switch {
+      display: flex;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px;
+      border-radius: 50px;
+      position: relative;
+      border: 1px solid var(--border-color);
+      width: fit-content;
+      margin: 0 auto;
+    }
+
+    .mode-switch input {
+      display: none;
+    }
+
+    .mode-switch label {
+      position: relative;
+      z-index: 2;
+      display: block;
+      padding: 8px 25px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      transition: color 0.3s;
+      border-radius: 50px;
+      font-weight: 500;
+      min-width: 140px;
+      text-align: center;
+    }
+
+    .mode-switch input:checked+label {
+      color: white;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .switch-indicator {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      bottom: 4px;
+      width: calc(50% - 4px);
+      background: var(--accent-gradient);
+      border-radius: 50px;
+      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+      box-shadow: var(--accent-glow);
+      z-index: 1;
+    }
+
+    /* Logic for switch position */
+    #mode-all:checked~.switch-indicator {
+      transform: translateX(100%);
     }
 
     .file-info {
@@ -170,12 +245,17 @@
 
     .status-msg {
       height: 24px;
-      margin-top: 10px;
       font-size: 0.9rem;
       color: var(--text-muted);
     }
-    .status-msg.error { color: #ff4757; }
-    .status-msg.success { color: var(--success-color); }
+
+    .status-msg.error {
+      color: #ff4757;
+    }
+
+    .status-msg.success {
+      color: var(--success-color);
+    }
 
     /* Instructions */
     .instructions {
@@ -245,9 +325,9 @@
       flex-wrap: wrap;
       gap: 8px;
     }
-    
+
     .code-text {
-        word-break: break-all;
+      word-break: break-all;
     }
 
     .copy-btn {
@@ -266,15 +346,22 @@
 
     /* Animations */
     @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .background-glow {
       position: fixed;
       width: 600px;
       height: 600px;
-      background: radial-gradient(circle, rgba(0, 242, 234, 0.05) 0%, rgba(0,0,0,0) 70%);
+      background: radial-gradient(circle, rgba(0, 242, 234, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
       top: -200px;
       left: 50%;
       transform: translateX(-50%);
@@ -283,6 +370,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="background-glow"></div>
@@ -291,6 +379,11 @@
     <header>
       <h1>CapCut SRT Extractor</h1>
       <p class="subtitle">Конвертируйте титры из проекта CapCut в субтитры (.srt) за пару секунд</p>
+
+      <div class="warning-note">
+        💡 <strong>Важно:</strong> Для экспорта субтитров необходимо создать их внутри СapСut <em>(Субтитры -
+          Автоматические субтитры - Создать)</em>.
+      </div>
     </header>
 
     <main>
@@ -299,11 +392,23 @@
         <div class="drop-text-main">Перетащите draft_content.json сюда</div>
         <div class="drop-text-sub">или нажмите, чтобы выбрать файл</div>
         <input type="file" id="fileInput" accept=".json,application/json">
-        
+
         <div class="actions">
           <div class="file-info" id="fileInfo">
             <span id="fileName">project.json</span>
           </div>
+
+          <!-- Mode Toggle -->
+          <div class="mode-switch">
+            <input type="radio" name="mode" id="mode-subs" value="subs" checked>
+            <label for="mode-subs">Только субтитры</label>
+
+            <input type="radio" name="mode" id="mode-all" value="all">
+            <label for="mode-all">Субтитры + Текст</label>
+
+            <div class="switch-indicator"></div>
+          </div>
+
           <button id="convertBtn" class="btn">Сконвертировать в SRT</button>
           <div id="status" class="status-msg"></div>
         </div>
@@ -315,7 +420,8 @@
           <div class="step-card">
             <span class="step-num">01</span>
             <p>CapCut хранит все данные о проекте (текст, тайминги, стили) в JSON файле.</p>
-            <p>Нажмите <kbd style="background:#333; padding:2px 6px; border-radius:4px;">Win</kbd> + <kbd style="background:#333; padding:2px 6px; border-radius:4px;">R</kbd> на клавиатуре.</p>
+            <p>Нажмите <kbd style="background:#333; padding:2px 6px; border-radius:4px;">Win</kbd> + <kbd
+                style="background:#333; padding:2px 6px; border-radius:4px;">R</kbd> на клавиатуре.</p>
           </div>
           <div class="step-card">
             <span class="step-num">02</span>
@@ -328,7 +434,8 @@
           <div class="step-card">
             <span class="step-num">03</span>
             <p>Откроется папка, в которой много странных папок с названиями из букв и цифр.</p>
-            <p>Отсортируйте папки <strong>по дате изменения</strong> — самая верхняя, скорее всего, ваш последний проект.</p>
+            <p>Отсортируйте папки <strong>по дате изменения</strong> — самая верхняя, скорее всего, ваш последний
+              проект.</p>
           </div>
           <div class="step-card">
             <span class="step-num">04</span>
@@ -341,19 +448,18 @@
   </div>
 
   <script>
-    // --- Logic for Conversion (Kept from original) ---
     function fmt(ms) {
-      ms = Math.max(0, ms|0);
+      ms = Math.max(0, ms | 0);
       const h = Math.floor(ms / 3600000);
       ms %= 3600000;
       const m = Math.floor(ms / 60000);
       ms %= 60000;
       const s = Math.floor(ms / 1000);
       const mm = ms % 1000;
-      return String(h).padStart(2,'0') + ':' +
-             String(m).padStart(2,'0') + ':' +
-             String(s).padStart(2,'0') + ',' +
-             String(mm).padStart(3,'0');
+      return String(h).padStart(2, '0') + ':' +
+        String(m).padStart(2, '0') + ':' +
+        String(s).padStart(2, '0') + ',' +
+        String(mm).padStart(3, '0');
     }
 
     function extractText(mat) {
@@ -363,13 +469,13 @@
           try {
             const obj = JSON.parse(v);
             if (obj && typeof obj.text === 'string' && obj.text.trim()) return obj.text;
-          } catch {}
+          } catch { }
         }
       }
       return '';
     }
 
-    function buildSrt(data) {
+    function buildSrt(data, mode) {
       const texts = data?.materials?.texts ?? [];
       const textById = new Map(texts.filter(t => t && t.id).map(t => [t.id, t]));
 
@@ -382,6 +488,11 @@
           const mid = seg?.material_id;
           const mat = textById.get(mid);
           if (!mat) continue;
+
+          // Mode Filtering Logic
+          // mode = 'subs'  -> only materials with type === 'subtitle'
+          // mode = 'all'   -> include everything from text tracks
+          if (mode === 'subs' && mat?.type !== 'subtitle') continue;
 
           const tt = seg?.target_timerange ?? {};
           const startUs = tt.start;
@@ -399,7 +510,7 @@
         }
       }
 
-      entries.sort((a,b) => (a.startUs - b.startUs) || (a.endUs - b.endUs) || a.text.localeCompare(b.text));
+      entries.sort((a, b) => (a.startUs - b.startUs) || (a.endUs - b.endUs) || a.text.localeCompare(b.text));
 
       let out = '';
       for (let i = 0; i < entries.length; i++) {
@@ -422,15 +533,15 @@
     const status = document.getElementById('status');
     const fileInfo = document.getElementById('fileInfo');
     const fileName = document.getElementById('fileName');
-    
+
     let currentFile = null;
     let draftJson = null;
 
     // Handle Drag & Drop
     dropZone.addEventListener('click', (e) => {
-        if (e.target !== convertBtn) {
-            fileInput.click();
-        }
+      // Prevent click if clicking on the switch or button
+      if (e.target.closest('.mode-switch') || e.target === convertBtn) return;
+      fileInput.click();
     });
 
     dropZone.addEventListener('dragover', (e) => {
@@ -473,10 +584,9 @@
       try {
         const text = await file.text();
         draftJson = JSON.parse(text);
-        
-        // Basic validation - check roughly if it looks like CapCut project
+
         if (!draftJson.materials && !draftJson.tracks) {
-             throw new Error("Invalid structure");
+          throw new Error("Invalid structure");
         }
 
         convertBtn.classList.add('active');
@@ -491,45 +601,49 @@
     }
 
     convertBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent dropzone click
-        if (!draftJson) return;
+      e.stopPropagation();
+      if (!draftJson) return;
 
-        try {
-            const srt = buildSrt(draftJson);
-            if (!srt.trim()) {
-                status.textContent = 'В проекте не найдено текста для субтитров.';
-                status.className = 'status-msg error';
-                return;
-            }
+      // Get active mode
+      const mode = document.querySelector('input[name="mode"]:checked').value;
 
-            const blob = new Blob([srt], { type: 'application/x-subrip;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = (currentFile.name.replace('.json', '') || 'subs') + '.srt';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-
-            status.textContent = 'Успешно! Скачивание началось...';
-            status.className = 'status-msg success';
-        } catch (e) {
-            status.textContent = 'Ошибка при создании SRT.';
-            status.className = 'status-msg error';
+      try {
+        const srt = buildSrt(draftJson, mode);
+        if (!srt.trim()) {
+          status.textContent = 'В проекте не найдено текста для субтитров.';
+          status.className = 'status-msg error';
+          return;
         }
+
+        const blob = new Blob([srt], { type: 'application/x-subrip;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (currentFile.name.replace('.json', '') || 'subs') + '.srt';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        status.textContent = 'Успешно! Скачивание началось...';
+        status.className = 'status-msg success';
+      } catch (e) {
+        console.error(e);
+        status.textContent = 'Ошибка при создании SRT.';
+        status.className = 'status-msg error';
+      }
     });
 
-    // Copy path function
     function copyPath() {
-        const text = document.getElementById('pathText').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = document.querySelector('.copy-btn');
-            const originalText = btn.innerText;
-            btn.innerText = 'Скопировано!';
-            setTimeout(() => btn.innerText = originalText, 2000);
-        });
+      const text = document.getElementById('pathText').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        const originalText = btn.innerText;
+        btn.innerText = 'Скопировано!';
+        setTimeout(() => btn.innerText = originalText, 2000);
+      });
     }
   </script>
 </body>
+
 </html>
